@@ -11,6 +11,8 @@ CodexRelay 是一个 macOS 菜单栏工具，用来管理多个 Codex 账号配�
 5. 如果 macOS 提示“无法验证开发者”，选择“打开”继续。
 6. 如果仍然被拦截，打开“系统设置 -> 隐私与安全性”，在提示区域点击“仍要打开”。
 
+![打开 DMG 后把 CodexRelay.app 拖到 Applications](assets/docs/install-dmg.png)
+
 不需要运行 `sudo`，也不要修改系统安全设置。
 
 ## 可选校验
@@ -26,6 +28,8 @@ shasum -a 256 -c CodexRelay-macos.dmg.sha256
 ## 使用菜单栏 App
 
 打开 App 后，屏幕顶部菜单栏会出现 `CodexRelay`。点击它可以看到账号配置列表、当前账号、用量和操作按钮。
+
+![CodexRelay 菜单栏面板总览](assets/docs/menu-overview.png)
 
 常用操作：
 
@@ -68,6 +72,8 @@ profile 只是本机里的账号配置名称，方便你区分不同账号。
 5. 在浏览器里完成登录授权。
 6. 回到 CodexRelay，等待它自动完成保存和刷新。
 
+![添加 profile 时复制登录地址到新的浏览器窗口](assets/docs/add-profile-login.png)
+
 如果你暂时不想继续，可以点击“取消新增”。等待浏览器登录期间，菜单栏不会卡住，你可以继续关闭面板、刷新或使用其他功能。
 
 ## 切换账号
@@ -75,6 +81,8 @@ profile 只是本机里的账号配置名称，方便你区分不同账号。
 在账号列表里点击目标 profile 的 `切换`。
 
 如果 Codex 正在运行，CodexRelay 会先提示你确认。确认后，它会关闭 Codex、切换账号，再重新打开 Codex。
+
+![切换和删除 profile 的确认界面](assets/docs/switch-delete.png)
 
 如果切换失败，先点 `诊断` 看提示；常见原因是 Codex 还没有完全退出，或目标账号配置不可用。
 
