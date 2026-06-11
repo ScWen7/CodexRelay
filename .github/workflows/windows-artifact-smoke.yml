@@ -1,0 +1,67 @@
+name: windows-artifact-smoke
+
+on:
+  push:
+    paths:
+      - codex-relay-windows-amd64.zip
+      - codex-relay-windows-amd64.zip.sha256
+      - .github/workflows/windows-artifact-smoke.yml
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Smoke test Windows preview artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $zip = ".\codex-relay-windows-amd64.zip"
+          $sha = ".\codex-relay-windows-amd64.zip.sha256"
+          if (-not (Test-Path $zip)) {
+            throw "missing Windows preview zip"
+          }
+          if (-not (Test-Path $sha)) {
+            throw "missing Windows preview sha256"
+          }
+
+          $expected = (Get-Content $sha).Split()[0].ToUpperInvariant()
+          $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToUpperInvariant()
+          if ($actual -ne $expected) {
+            throw "sha256 mismatch"
+          }
+
+          $unpack = Join-Path $env:RUNNER_TEMP "codex-relay-windows-preview"
+          Remove-Item $unpack -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force $unpack | Out-Null
+          Expand-Archive -Force $zip $unpack
+
+          $exe = Join-Path $unpack "codex-relay.exe"
+          if (-not (Test-Path $exe)) {
+            throw "missing codex-relay.exe in Windows preview zip"
+          }
+
+          & $exe --version
+          $versionInfo = (& $exe --version --json) | ConvertFrom-Json
+          if ($versionInfo.cliProtocolVersion -lt 1) {
+            throw "missing CLI protocol version"
+          }
+
+          $env:CODEX_HOME = Join-Path $env:RUNNER_TEMP "codex-home"
+          $env:CODEX_RELAY_HOME = Join-Path $env:RUNNER_TEMP "codex-relay-home"
+          Remove-Item $env:CODEX_HOME, $env:CODEX_RELAY_HOME -Recurse -Force -ErrorAction SilentlyContinue
+
+          & $exe setup
+          $doctor = (& $exe doctor --json) | ConvertFrom-Json
+          if (-not $doctor.findings) {
+            throw "doctor JSON had no findings"
+          }
+
+          $status = (& $exe status --json) | ConvertFrom-Json
+          if (-not ($status.PSObject.Properties.Name -contains "activeAuthValid")) {
+            throw "status JSON missing activeAuthValid"
+          }
